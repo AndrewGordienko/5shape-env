@@ -1,0 +1,1 @@
+so i do cmake .., then make, then python3 setup.py install, then python3 main.py

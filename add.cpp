@@ -163,6 +163,51 @@ private:
     std::vector<Joint> joints;
 };
 
+class RayCastCallback : public b2RayCastCallback {
+public:
+    RayCastCallback()
+        : hit(false), distance(-1.0f) {}
+
+    float ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float fraction) override {
+        hit = true;
+        distance = fraction; 
+        return 0.0f; // Returning 0 terminates the raycast after the first hit
+    }
+
+    bool hit;
+    float distance;
+};
+
+void checkCollisionWithGroundAndRayCast(Creature& creature, b2World& world, Floor& floor, std::vector<float>& touch_inputs, std::vector<float>& raycast_result, std::vector<int>& directions) {
+    for (int index = 0; index < creature.getShapes().size(); ++index) {
+        const Shape& shape = creature.getShapes()[index];
+        for (b2ContactEdge* edge = shape.GetBoxBody()->GetContactList(); edge; edge = edge->next) {
+            if (edge->other == floor.GetGroundBody()) {
+                touch_inputs[index-1] = 1;
+                break;
+            }
+        }
+
+        if (index == 3) {  // For the middle shape (shape number three)
+            b2Vec2 center = shape.GetBoxBody()->GetPosition();  // Center point of the shape
+            float raycast_length = 100.0f;  // Length of the rays
+
+            RayCastCallback callback;  // Create an instance of the callback object
+
+            for (int direction : directions) {
+                float angle = static_cast<float>(direction) * (b2_pi / 4.0f);  // Convert the direction to radians
+                b2Vec2 raycast_end = center + raycast_length * b2Vec2(std::cos(angle), std::sin(angle));
+
+                world.RayCast(&callback, center, raycast_end);  // Perform the raycast for each direction
+                if (callback.hit) {
+                    raycast_result[direction] = raycast_length * callback.distance;
+                }
+
+                callback.hit = false;  // Reset the hit flag for the next raycast
+            }
+        }
+    }
+}
 
 b2Vec2 box2dToScreen(const b2Vec2& input, int windowHeight) {
     float scale = 20.0f; 
@@ -190,6 +235,13 @@ void drawBox() {
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+    // Initialize directions for the raycast (45 degrees apart)
+    std::vector<int> directions = {0, 1, 2, 3, 4, 5, 6, 7};
+
+    // Initialize touch_inputs and raycast_result with zeroes
+    std::vector<float> touch_inputs(creature.getShapes().size(), 0.0f);
+    std::vector<float> raycast_result(directions.size(), 0.0f);
+
     bool running = true;
     while (running) {
         SDL_Event event;
@@ -204,6 +256,21 @@ void drawBox() {
         int32 positionIterations = 2;
         
         world.Step(timeStep, velocityIterations, positionIterations);
+
+        checkCollisionWithGroundAndRayCast(creature, world, floor, touch_inputs, raycast_result, directions);
+
+        // Append touch_inputs to the end of raycast_result
+        raycast_result.insert(raycast_result.end(), touch_inputs.begin(), touch_inputs.end());
+
+        // Print out the values of raycast_result
+        std::cout << "Raycast result and collision:";
+        for (const auto& value : raycast_result) {
+            std::cout << " " << value;
+        }
+        std::cout << std::endl;
+
+        // Remove the appended touch_inputs from raycast_result for the next iteration
+        raycast_result.resize(directions.size());
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
