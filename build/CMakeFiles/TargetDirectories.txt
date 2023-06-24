@@ -1,3 +1,0 @@
-/Users/andrewgordienko/Documents/freshc/build/CMakeFiles/freshc.dir
-/Users/andrewgordienko/Documents/freshc/build/CMakeFiles/edit_cache.dir
-/Users/andrewgordienko/Documents/freshc/build/CMakeFiles/rebuild_cache.dir
