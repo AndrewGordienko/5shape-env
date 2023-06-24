@@ -1,0 +1,3 @@
+/Users/andrewgordienko/Documents/freshc/build/temp.macosx-10.9-universal2-cpython-311/cmake_example/CMakeFiles/cmake_example.dir
+/Users/andrewgordienko/Documents/freshc/build/temp.macosx-10.9-universal2-cpython-311/cmake_example/CMakeFiles/edit_cache.dir
+/Users/andrewgordienko/Documents/freshc/build/temp.macosx-10.9-universal2-cpython-311/cmake_example/CMakeFiles/rebuild_cache.dir
