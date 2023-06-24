@@ -1,0 +1,6 @@
+/.vscode
+/CMakeLists.txt
+/build
+get-pip.py
+/dist
+/cmake_example.egg-info
